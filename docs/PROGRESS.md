@@ -9,8 +9,12 @@
 
 - [ ] Vite vanilla-ts 프로젝트 구성 (기존 docs/, CLAUDE.md 유지), Vitest 추가
 - [ ] npm 스크립트: `dev`, `build`, `test`, `check`(tsc --noEmit + vitest run)
-- [ ] GitHub Actions로 Pages 배포 워크플로 작성 (`base: '/get_an_a_plus/'`)
-  - 완료 기준: main에 push하면 Pages 링크에서 "Hello" 수준의 페이지가 뜬다 (사용자가 저장소 Settings → Pages에서 Source를 GitHub Actions로 설정해야 함)
+- [ ] Claude Code hook: `.claude/settings.json` + `.claude/hooks/*.mjs` (PostToolUse → tsc, Stop → npm run check), SPEC 11장
+  - 완료 기준: 일부러 타입 에러를 남긴 채 턴을 끝내려 하면 Stop hook이 막고 Claude가 고치러 간다
+- [ ] git hook: simple-git-hooks로 pre-commit(`npm run check`), commit-msg(commitlint, `balance` type 허용)
+  - 완료 기준: `fix 버그` 같은 형식 위반 메시지 커밋이 거부되고, 올바른 메시지는 통과한다
+- [ ] GitHub Actions 워크플로: check + build 통과 시에만 Pages 배포 (`base: '/get_an_a_plus/'`)
+  - 완료 기준: main에 push하면 Pages 링크에서 "Hello" 수준의 페이지가 뜨고, 테스트를 일부러 깨면 배포 단계가 실행되지 않는다 (사용자가 저장소 Settings → Pages에서 Source를 GitHub Actions로 설정해야 함)
 - [ ] `data/types.ts`, `data/loader.ts`, 샘플 계획서 3개 JSON
   - 완료 기준: loader 테스트 통과, 잘못된 JSON(필드 누락, 없는 id 참조)을 넣으면 파일명과 필드명이 담긴 에러가 난다
 
@@ -21,7 +25,8 @@
 - [ ] exam 이벤트
 - [ ] `gradeCalculator` + 테스트 (경계값: 컷 점수, trust ±100)
 - [ ] 결과 화면 (텍스트)
-  - 완료 기준: 계획서 선택 → 15주 → 학점 표시까지 버튼만으로 끊김 없이 한 판 끝난다
+- [ ] `?seed=` 쿼리 지원, Playwright 설치, E2E 한 판 테스트 (`npm run e2e`), CI에 E2E 추가
+  - 완료 기준: 계획서 선택 → 15주 → 학점 표시까지 버튼만으로 끊김 없이 한 판 끝나고, 이 흐름이 E2E 테스트로 자동 통과한다
 
 ### M2 시스템 완성 (~11/26)
 
@@ -56,9 +61,10 @@
 - 2026-11-12: Unity 대신 웹(TypeScript + Vite, 프레임워크 없음)으로 개발, GitHub Pages 배포. 이유: 텍스트와 버튼 중심이라 엔진 기능이 필요 없고, 교수님이 설치 없이 링크로 바로 플레이할 수 있으며, Claude Code가 에디터 수작업 없이 전부 코드로 다룰 수 있음. LLM은 선택 사항이라 웹의 불리함은 감수.
 
 - 2026-11-12: 커밋은 Claude Code가 Conventional Commits 기반 규칙(docs/COMMIT_CONVENTION.md)으로 직접 한다. 이유: AI를 최대한 활용하는 게 개인 목표이고, 나중에 히스토리를 보며 커밋 방법을 익히려고. push는 사용자 요청 시에만.
+- 2026-11-12: 검증을 기계로 강제한다 (SPEC 11장). Claude Code hook, git hook + commitlint, CI 게이트 배포, Playwright E2E. 이유: CLAUDE.md 지시는 권고라 무시될 수 있지만 hook과 CI는 반드시 실행됨. 리뷰 서브에이전트는 과잉 설계 위험이 있어 보류.
 
 ## 세션 로그
 
 형식: `- YYYY-MM-DD: 한 일 / 다음 할 일 / 막힌 점`
 
-- 2026-11-12: 기획 문서 3종 작성 후 Unity → 웹으로 전환, .gitignore를 Node용으로 교체, 커밋 컨벤션 문서 추가 / M0 첫 항목 (Vite 프로젝트 구성) / 없음
+- 2026-11-12: 기획 문서 3종 작성 후 Unity → 웹으로 전환, .gitignore를 Node용으로 교체, 커밋 컨벤션 문서 추가, 검증 자동화 계획 추가 / M0 첫 항목 (Vite 프로젝트 구성) / 없음

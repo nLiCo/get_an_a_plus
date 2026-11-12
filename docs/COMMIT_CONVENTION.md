@@ -40,6 +40,7 @@
 - 커밋 하나에는 논리적인 변경 하나만 담는다. "기능 추가 + 상관없는 버그 수정"은 두 커밋으로 나눈다.
 - PROGRESS 체크박스 하나는 커밋 하나 이상. 그 항목을 끝낸 커밋에 `docs/PROGRESS.md` 갱신을 함께 담는다.
 - 커밋 전에 `npm run check`와 `npm run build`가 통과해야 한다 (M0 세팅 전에는 해당 없음). 실패하는 상태로 커밋하지 않는다.
+- 이 규칙들은 git hook으로 강제된다: pre-commit이 `npm run check`를, commit-msg가 commitlint로 메시지 형식을 검사한다. 거부되면 메시지나 코드를 고쳐서 다시 커밋한다. `--no-verify`는 쓰지 않는다.
 - `git add .` 대신 바꾼 파일을 명시해서 스테이징하고, 커밋 전에 `git diff --staged`로 의도하지 않은 파일이 없는지 확인한다.
 - 이미 커밋한 것을 amend, rebase, force push로 고치지 않는다. 잘못됐으면 새 커밋으로 고친다.
 

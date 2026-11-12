@@ -200,7 +200,7 @@ lecture 행동 4종과 assignment 선택 3종의 효과는 type별 공통 규칙
 - `core/gameState.ts`: 6.1의 상태 타입과 초기 상태 생성. 상태는 불변으로 다루고 새 객체를 반환한다.
 - `core/weekResolver.ts`: (상태, 이벤트, 선택, rng) → { 새 상태, 결과 텍스트 }.
 - `core/gradeCalculator.ts`: (상태, trueWeights) → { 점수, 학점, 항목별 점수 }.
-- `core/rng.ts`: 시드 고정 가능한 난수 함수 (예: mulberry32).
+- `core/rng.ts`: 시드 고정 가능한 난수 함수 (예: mulberry32). URL에 `?seed=숫자`가 있으면 그 시드를 쓴다 (E2E 테스트와 디버깅용).
 - `data/loader.ts`: JSON 로드와 검증.
 - `interview/`: `InterviewDriver` 인터페이스(한 턴 진행). 지금은 `choiceDriver`만 구현.
 - `ui/`: 화면별 render 함수 (title, syllabusSelect, week, interview, result, clueNote). core를 호출하고 결과만 그린다.
@@ -226,3 +226,22 @@ M3 완료 후 사용자가 승인하면 진행한다. 참고용 메모:
 - 응답이 형식에 안 맞거나 실패하거나, 브라우저가 지원하지 않으면 선택지 면담으로 폴백한다.
 - 실행 방식 후보: 브라우저 내 추론(WebLLM 등, WebGPU 필요, 첫 실행 시 모델 다운로드) 또는 사용자 PC의 로컬 서버(Ollama 등) 연결. 어느 쪽이든 어떤 한국어 소형 모델이 실제로 돌아가는지 먼저 검증한다.
 - 후보 모델: Kanana-2 1.3B/3B, HyperCLOVA X SEED 1.5B, Qwen3.5 2B. 배포 시 각 라이선스 고지 조건을 지킨다.
+
+## 11. 검증
+
+"끝나 보인다"가 아니라 기계가 통과/실패를 판정하게 한다. 아래 장치는 강제이며 끄거나 우회하지 않는다.
+
+| 층 | 언제 | 무엇을 | 실패하면 |
+|---|---|---|---|
+| Claude Code PostToolUse hook | 파일 Edit/Write 직후 | `tsc --noEmit` (빠른 검사만) | exit 2로 에러를 Claude에게 전달 |
+| Claude Code Stop hook | Claude가 턴을 끝내기 직전 | `npm run check` | exit 2로 종료를 막고 실패 내용을 전달 |
+| git pre-commit | 커밋 직전 | `npm run check` | 커밋 거부 |
+| git commit-msg | 커밋 직전 | commitlint (COMMIT_CONVENTION 규칙, `balance` type 포함) | 커밋 거부 |
+| CI (GitHub Actions) | push 시 | `npm run check`, `npm run build`, `npm run e2e` | Pages 배포 안 함 |
+| E2E (Playwright) | 화면 흐름 변경 시, CI | 시드 고정으로 한 판 자동 플레이 | 테스트 실패 |
+
+- hook 스크립트는 Windows에서도 돌도록 셸 스크립트 대신 Node(`.mjs`)로 작성한다.
+- PostToolUse는 수정마다 돌기 때문에 몇 초 안에 끝나는 검사만 둔다. 테스트 전체와 E2E는 Stop, pre-commit, CI에 둔다.
+- Stop hook은 실패 출력의 마지막 부분(예: 80줄)만 stderr로 보내 컨텍스트를 아낀다.
+- E2E 기본 시나리오: `?seed=1`로 접속 → 계획서 하나 선택 → 매 주 첫 번째 선택지 클릭 → 15주 후 결과 화면에 학점 텍스트가 보인다.
+- 테스트 작성 원칙: core 로직은 실패하는 테스트를 먼저 쓰고 구현한다. 테스트를 통과시키려고 테스트를 고치지 않는다 (테스트가 SPEC과 다를 때만 고친다).
